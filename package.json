@@ -1,0 +1,17 @@
+{
+  "name": "bitspace",
+  "private": true,
+  "packageManager": "pnpm@10.26.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:api": "pnpm --filter @bitspace/api dev",
+    "dev:web": "pnpm --filter @bitspace/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "db:migrate": "pnpm --filter @bitspace/db prisma migrate dev",
+    "db:generate": "pnpm --filter @bitspace/db prisma generate",
+    "db:seed": "pnpm --filter @bitspace/db prisma db seed",
+    "db:studio": "pnpm --filter @bitspace/db prisma studio"
+  }
+}

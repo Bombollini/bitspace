@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+coverage
+.env
+.env.*
+*.log
+
+# prisma
+packages/db/prisma/dev.db
+
+# OS
+.DS_Store
+Thumbs.db

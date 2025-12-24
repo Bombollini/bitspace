@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  DEVELOPER
+  OWNER
+  SUPER_ADMIN
+}
+
+enum ProjectRole {
+  MEMBER
+  ADMIN
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  ARCHIVED
+}
+
+//USERS
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  passwordHash String
+  role          UserRole @default(DEVELOPER)
+
+  projectsOwned Project[]        @relation("ProjectOwner")
+  memberships   ProjectMember[]
+  tasksAssigned Task[]           @relation("TaskAssignee")
+  comments      TaskComment[]
+  activityLogs  ActivityLog[]
+  refreshTokens RefreshToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//PROJECTS
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+
+  ownerId String
+  owner   User @relation("ProjectOwner", fields: [ownerId], references: [id])
+
+  members   ProjectMember[]
+  tasks     Task[]
+  activities ActivityLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//PROJECT MEMBERS
+model ProjectMember {
+  id        String      @id @default(uuid())
+  role      ProjectRole @default(MEMBER)
+
+  userId    String
+  projectId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, projectId])
+}
+
+//TASKS
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  assigneeId String?
+  assignee   User? @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  comments   TaskComment[]
+  activities ActivityLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//TASK COMMENTS
+model TaskComment {
+  id      String @id @default(uuid())
+  content String
+
+  taskId String
+  task   Task @relation(fields: [taskId], references: [id])
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+//ACTIVITY LOGS
+model ActivityLog {
+  id        String @id @default(uuid())
+  action    String
+  metadata  Json?
+
+  userId    String?
+  projectId String?
+  taskId    String?
+
+  user    User?    @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+  task    Task?    @relation(fields: [taskId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+//REFRESH TOKENS
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}

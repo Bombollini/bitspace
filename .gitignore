@@ -5,6 +5,8 @@ coverage
 .env
 .env.*
 *.log
+brief.md
+milestone.md
 
 # prisma
 packages/db/prisma/dev.db
